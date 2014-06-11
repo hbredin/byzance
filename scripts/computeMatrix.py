@@ -18,7 +18,6 @@ def computeUserMatrix(dictionary, listID):
 		else:
 			print "Unable to found image %d in json file" % (img_i)
 			return None
-	print matrix
 	return matrix
 
 def computeDateTakenMatrix(dictionary, listID):
@@ -37,7 +36,6 @@ def computeDateTakenMatrix(dictionary, listID):
 		else:
 			print "Unable to found image %d in json file" % (img_i)
 			return None
-	print matrix
 	return matrix
 
 def computeDistanceMatrix(dictionary, listID):
@@ -50,10 +48,10 @@ def computeDistanceMatrix(dictionary, listID):
 			obj_i = dictionary[img_i]
 			obj_j = dictionary[img_j]
 			if not 'longitude' in obj_i or not 'longitude' in obj_j:
-				matrix[i][j] = None
-				matrix[j][i] = None
+				matrix[i][j] = numpy.nan
+				matrix[j][i] = numpy.nan
 				if not 'longitude' in obj_i:
-					matrix[i][i] = None
+					matrix[i][i] = numpy.nan
 			else:
 				distance = distance_on_unit_sphere(obj_i['latitude'], obj_i['longitude'], obj_j['latitude'], obj_j['longitude'])
 				matrix[i][j] = distance
@@ -61,7 +59,6 @@ def computeDistanceMatrix(dictionary, listID):
 		else:
 			print "Unable to found image %d in json file" % (img_i)
 			return None
-	print matrix
 	return matrix
 
 def distance_on_unit_sphere(lat1, long1, lat2, long2):
@@ -97,6 +94,6 @@ def readjson(jsonFile):
 print "Loading json into memory..."
 dictionary = readjson("/vol/corpora4/mediaeval/2014/SED_2014_Dev_Metadata.json")
 print "...Done !"
-computeUserMatrix(dictionary, "lst")
-computeDateTakenMatrix(dictionary, "lst")
-computeDistanceMatrix(dictionary, "lst")
+computeUserMatrix(dictionary, "/people/laurent/sed2014/repo/byzance/Dev_dataset/SED_2014_Dev_A_Pictures.txt")
+computeDateTakenMatrix(dictionary, "/people/laurent/sed2014/repo/byzance/Dev_dataset/SED_2014_Dev_A_Pictures.txt")
+computeDistanceMatrix(dictionary, "/people/laurent/sed2014/repo/byzance/Dev_dataset/SED_2014_Dev_A_Pictures.txt")
