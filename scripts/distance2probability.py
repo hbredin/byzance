@@ -45,14 +45,14 @@ import pickle
 
 def do_train(distance_matrix, groundtruth_matrix, d2p_model):
 
-    # load distance matrix
-    x = np.load(distance_matrix)
+    # load distance matrix and convert it to score
+    x = -np.load(distance_matrix)
 
     # load groundtruth matrix
     y = np.load(groundtruth_matrix)
 
     # train isotonic regression
-    ir = LLRIsotonicRegression()
+    ir = LLRIsotonicRegression(equal_priors=True)
     ir.fit(x, y)
 
     # save regression
@@ -62,8 +62,8 @@ def do_train(distance_matrix, groundtruth_matrix, d2p_model):
 
 def do_apply(distance_matrix, d2p_model, probability_matrix):
 
-    # load distance matrix
-    x = np.load(distance_matrix)
+    # load distance matrix and convert it to score
+    x = -np.load(distance_matrix)
 
     # load regression
     with open(d2p_model, 'rb') as f:
