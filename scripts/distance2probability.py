@@ -70,7 +70,7 @@ def do_apply(distance_matrix, d2p_model, probability_matrix):
         ir = pickle.load(f)
 
     # apply isotonic regression
-    y = ir.apply(x)
+    y = ir.toPosteriorProbability(x)
 
     # save probability matrix
     np.save(probability_matrix, y)
