@@ -56,7 +56,8 @@ def do_train(distance_matrix, groundtruth_matrix, d2p_model):
     ir.fit(x, y)
 
     # save regression
-    pickle.dump(ir, d2p_model)
+    with open(d2p_model, 'wb') as f:
+        pickle.dump(ir, f)
 
 
 def do_apply(distance_matrix, d2p_model, probability_matrix):
@@ -65,7 +66,8 @@ def do_apply(distance_matrix, d2p_model, probability_matrix):
     x = np.load(distance_matrix)
 
     # load regression
-    ir = pickle.load(d2p_model)
+    with open(d2p_model, 'rb') as f:
+        ir = pickle.load(f)
 
     # apply isotonic regression
     y = ir.apply(x)
@@ -77,7 +79,6 @@ def do_apply(distance_matrix, d2p_model, probability_matrix):
 if __name__ == '__main__':
 
     arguments = docopt(__doc__, version='0.1')
-    print arguments
 
     if arguments['train']:
         distance_matrix = arguments['<distance_matrix>']
