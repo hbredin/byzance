@@ -116,6 +116,10 @@ class ColorHistogram(object):
 
         # load image in BGR (blue-green-red) colorspace
         bgr = cv2.imread(path)
+        if bgr is None:
+            print 'ERROR: cannot compute histogram for %s' % path
+            return np.NaN
+
         # get its dimension
         width, height, _ = bgr.shape
 
