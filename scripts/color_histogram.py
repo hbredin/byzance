@@ -52,7 +52,7 @@
 Compute color histograms for list of images.
 
 Usage:
-  color_histogram [-R <R>] [-G <G>] [-B <B>] [-H <H>] [-S <S>] [-V <V>] <input.dir> <image.lst> <output.npy>
+  color_histogram [-R <R>] [-G <G>] [-B <B>] [-H <H>] [-S <S>] [-V <V>] <input.dir> <image.txt> <output.npy>
   color_histogram -h | --help
   color_histogram --version
 
@@ -173,14 +173,14 @@ def histogram_intersection(histogram1, histogram2):
     return 1. - np.sum(np.minimum(histogram1, histogram2))
 
 
-def do_it(input_dir, image_lst, output_npy,
+def do_it(input_dir, image_txt, output_npy,
           R=0, G=0, B=0, H=0, S=0, V=0):
 
     # initial color histogram extractor
     extractor = ColorHistogram(R=R, G=G, B=B, H=H, S=S, V=V)
 
     # load image list
-    with open(image_lst, 'r') as f:
+    with open(image_txt, 'r') as f:
         images = [image.strip() for image in f.readlines()]
 
     nImages = len(images)
@@ -212,9 +212,9 @@ if __name__ == '__main__':
     v = int(arguments['--value'])
 
     input_dir = arguments['<input.dir>']
-    image_lst = arguments['<image.lst>']
+    image_txt = arguments['<image.txt>']
     output_npy = arguments['<output.npy>']
 
-    do_it(input_dir, image_lst, output_npy,
+    do_it(input_dir, image_txt, output_npy,
           R=r, G=g, B=b, H=h, S=s, V=v)
 
