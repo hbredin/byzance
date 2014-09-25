@@ -1,0 +1,177 @@
+\documentclass{acm_proc_article-me11_tweaked}
+\usepackage{multirow}
+
+\begin{document}
+
+\title{Metadata-based full images clustering for Social Event Detection}
+%
+% You need the command \numberofauthors to handle the 'placement
+% and alignment' of the authors beneath the title.
+%
+% For aesthetic reasons, we recommend 'three authors at a time'
+% i.e. three 'name/affiliation blocks' be placed beneath the title.
+%
+% NOTE: You are NOT restricted in how many 'rows' of
+% "name/affiliations" may appear. We just ask that you restrict
+% the number of 'columns' to three.
+%
+% Because of the available 'opening page real-estate'
+% we ask you to refrain from putting more than six authors
+% (two rows with three columns) beneath the article title.
+% More than six makes the first-page appear very cluttered indeed.
+%
+% Use the \alignauthor commands to handle the names
+% and affiliations for an 'aesthetic maximum' of six authors.
+% Add names, affiliations, addresses for
+% the seventh etc. author(s) as the argument for the
+% \additionalauthors command.
+% These 'additional authors' will be output/set for you
+% without further effort on your part as the last section in
+% the body of your article BEFORE References or any Appendices.
+
+\numberofauthors{3} %  in this sample file, there are a *total*
+% of EIGHT authors. SIX appear on the 'first-page' (for formatting
+% reasons) and the remaining two appear in the \additionalauthors section.
+%
+\author{
+Camille Guinaudeau$^{1,2}$, Antoine Laurent$^{2}$, Herv\'{e} Bredin$^{2}$\\
+       \affaddr{$^1$ University Paris-Sud, Rue du Ch\^{a}teau, 91400 Orsay}\\
+       \affaddr{$^2$ LIMSI-CNRS, Rue John Von Neumann, 91400 Orsay}\\
+       \email{firstname.lastname@limsi.fr}
+}
+
+
+\maketitle
+\begin{abstract}
+This paper provides an overview of the Social Event Detection (SED) system developped at LIMSI for the 2014 campaign. Our approach is based on a hierachical clustering that uses textual metadata, user-based knowledge and geographical information. These different sources of knowledge, either used separately or in cascade, reach good results for the full clustering subtask with a normalized mutual information equals to 0.95 and F1 scores greater than 0.82 for our best run.
+
+\end{abstract}
+
+\section{Introduction}
+The Social Event Detection (SED) task aims at mining social events (such as concerts, protest and so on) in large collections of online multimedia~\cite{PPM+14}. This challenge is divided into three subtasks: full clustering, retrieval of events and events' labelling. 
+In this work, we focus only on the first subtask which consists in clustering all images in the given dataset, so that each cluster represents a social event. 
+As the number of the target clusters is not provided by the SED organizers, the main difficulty of this substak is to infer this number and decide when to stop the images gathering.
+To overcome this difficulty, our full clustering system relies on a hierarchical clustering approach allowing us to gather images as long as the distance between newly formed clusters is small enough.
+
+In this work, our system is only based on the metadata associated with images. The hierarchical clustering approach, presented in section~\ref{HC}, is based on distance matrices accounting for textal metadata~\ref{text} or geographical information~\ref{geo}. In order to make the distance computation as robust as possible and avoid data sparsity, a first \textit{preliminary clustering} is performed on the dataset, so that each preliminary cluster is associated with a set of metadata coming from all the images in the cluster. This preliminary clustering is described in section~\ref{preliminary}.
+
+\section{Full clustering}
+
+The development dataset released by the SED task organizers for the full clustering subtask is composed by 362,578 images collected from Flickr, associated with their metadata.  
+To lower the computation time and facilitate our experimentation process, this development dataset was divided into three smaller datasets Dev A, Dev B and Dev C so that each dataset has approximately the same number of clusters and the same distribution in terms of number of images per cluster. Moreover, the number of images in each cluster is also quite similar to the number of images contained in the test set (110,541) allowing us to experiment our approach with comparable datatsets. 
+As explained in the introduction, a preliminary clustering was first applied on these datasets -- to create user-based clusters of images -- before the hierarchical clustering step that makes use of textual metadata and/or geographical information.
+
+\subsection{user-based clustering}\label{preliminary}
+The preliminary clustering is obtained by creating one cluster per user, using the user name metadata associated with each image in the dataset.
+As these user-based clusters usually contain several social events (one user is rarely associated with only one social event) they are then divided into smaller ones depending on date and time information also mentionned in the pictures metadata.
+
+For each cluster, we initialize a time core with the date of the first picture, hereafter called picture $F$, in the cluster. We then compare this time core with the date of all the other pictures in the cluster and we pick the closest one, hereafter called picture $C$. If picture $C$ is taken less than $\alpha$ hours before or after the time core then it belongs with the same cluster than picture $F$ and the time core is recomputed to equal the mean between the previous time core and the date of picture $C$. However, if picture $C$ was taken too far from picture $F$ then another cluster is created with a new time core corresponding to the taken time of picture $C$. 
+
+\begin{table}[t]
+\centering
+\caption{Homogenity for user-based clustering}\label{t:preliminary}
+\begin{tabular}{|c|c|c|c|} \hline
+ & \textbf{Dev A} & \textbf{Dev B} & \textbf{Dev C}\\\hline
+1h &  0.9874 & 0.9872 & 0.9874\\\hline
+10h &  0.9813  & 0.9796 & 0.9798\\\hline
+20h &  0.9785  & 0.9766 & 0.9770\\\hline
+24h &  0.9777  & 0.9755 & 0.9757\\\hline
+30h & 0.9763   & 0.9743 & 0.9749\\\hline
+100h & 0.9678 & 0.9673 & 0.9665\\\hline
+\end{tabular}
+\end{table}
+
+\begin{table*}[t]
+\centering
+\caption{Results on test set}\label{t:test}
+\begin{tabular}{|c||c|c|c||c|c|c|c|c|} \hline
+ & Dev A & Dev B & Dev C & 20h-Geo-Text & 24h-Geo-Text & 30h-Geo-Text & 24h-Text & 24h-Geo\\\hline
+F1 (Main Score) &0.7895 &0.7869 & 0.7912& \textbf{0.8214} & 0.8140 & 0.8115 & 0.7563 & 0.7387\\\hline
+NMI & 0.9479&0.9472 & 0.9483& \textbf{0.9554} & 0.9532 & 0.9526 & 0.9423 & 0.9359\\\hline
+Divergence F1 & 0.6880 &0.7258 & 0.7224& \textbf{0.8207} & 0.8132 & 0.8107 & 0.7557 & 0.7380\\\hline
+\end{tabular}
+\end{table*}
+
+The objective of this step is to lower the number of clusters to be processed in the hierarchical clustering step while keeping the clusters as pure as possible. To evaluate the purity of our clusters we use the homogeneity metric~\cite{rosenberg2007v} which equals one when each cluster contains only members of a single class. Table~\ref{t:preliminary} summarizes the homogeneity scores for the development datasets Dev A, Dev B and Dev C with an $\alpha$ parameter ranging from 1 hour to 100 hours. It can be seen from this table that, first, the values are similar for all the datasets and, second, that the homogenity values are high even if the $\alpha$\footnote{All parameters were tuned on Dev A.} parameter equals 100 meaning that user usually does not participate to social event very frequently. 
+
+\subsection{Hierarchical clustering approach}\label{HC}
+
+The hierarchical clustering approach begins with a set of clusters that have been defined in a preliminary clustering presented in the previous section. When two clusters $u$ and $v$ from this set are combined into a single cluster $w$, $u$ and $v$ are removed from the set, and $w$ is added to the set. When only one cluster remains, the algorithm stops.
+To decide whether or not two clusters have to be combined, a distance matrix is maintained at each iteration where the $d[u,v]$ entry corresponds to the distance between cluster $u$ and $v$.
+At each iteration, the algorithm must update the distance matrix to reflect the distance of the newly formed cluster $w$ with the remaining clusters in the set.
+The distance between the newly formed cluster $w$ and each $v'$ is computed thanks to the following equation
+\begin{equation}
+d(w,v') = \min(dist(w[i],v'[j]))
+\end{equation}
+for all images $i$ in cluster $u$ and $j$ in cluster $v$.
+
+The final clustering is then obtained by forming flat clusters from the hierarchical clustering previously defined. A threshold $\theta$ is used so that observations in each flat cluster have no intergroup dissimilarity greater than $\theta$.
+
+% | F1 (Main Score)                      | 0.5416   |
+% |-------------------------------------------------|
+% | NMI                                  | 0.9008   |
+% | F1 (Div)                             | 0.2018   |
+%
+%
+% | F1 (Main Score)                      | 0.5364   |
+% |-------------------------------------------------|
+% | NMI                                  | 0.8987   |
+% | F1 (Div)                             | 0.1890   |
+%
+%
+% | F1 (Main Score)                      | 0.5404   |
+% |-------------------------------------------------|
+% | NMI                                  | 0.9000   |
+% | F1 (Div)                             | 0.2039   |
+
+%\begin{table*}
+%\centering
+%\caption{On dev A}
+%\begin{tabular}{|c||c|c||c|c||c|c|} \hline
+% & \multicolumn{2}{|c||}{Dev A} & \multicolumn{2}{|c||}{Dev B} & \multicolumn{2}{|c|}{Dev C} \\\hline
+% & homogeneity & coverage & homogeneity & coverage & homogeneity & coverage\\ \hline
+%1h &  0.9874 &  0.8073 & 0.9872 & 0.8071  & 0.9874 & 0.8094\\ \hline
+%2h &  0.9853 &  0.8140 & 0.9849 & 0.8129  & 0.9848 & 0.8164\\ \hline 
+%3h &  0.9841 &  0.8159 & 0.9836 & 0.8151  & 0.9839 & 0.8184\\ \hline 
+%5h &  0.9829  &  0.8188 & 0.9821 & 0.8171 & 0.9827 & 0.8206\\ \hline
+%10h &  0.9813  &  0.8281 & 0.9796 & 0.8261 & 0.9798 & 0.8286\\ \hline
+%15h &  0.9794 &  0.8327 & 0.9777 & 0.8327 & 0.9782 & 0.8331\\ \hline
+%20h &  0.9785  &  0.8348 & 0.9766 & 0.8332 & 0.9770 & 0.8353\\ \hline
+%24h &  0.9777  &  0.8350 & 0.9755 & 0.8330 & 0.9757 & 0.8351 \\ \hline
+%30h & 0.9763   &  0.8346 & 0.9743 & 0.8317 & 0.9749 & 0.8343 \\ \hline
+%40h &  0.9750  & 0.8342 & 0.9732 & 0.8312 & 0.9739 & 0.8343 \\ \hline
+%50h & 0.9734 & 0.8334 & 0.9720 & 0.8307 & 0.9717 & 0.8339\\ \hline
+%100h & 0.9678 & 0.8345 & 0.9673 & 0.8308 & 0.9665 & 0.8345\\ \hline
+%200h & 0.9588 & 0.8347 & 0.9598 & 0.8319 & 0.9592 & 0.8335\\ \hline
+%\end{tabular}
+%\end{table*}
+
+\subsection{Distance matrices}
+
+In this last part, we describe how the distance matrices used in the hierarchical clustering approach are computed. Both use the metadata associated with the pictures, namely textual metadata and geographical information.
+
+\subsubsection{Textual metadata distance matrix}\label{text}
+To compute the textual distance, each cluster is represented by a vector composed by lemmas weighted with a bm25 score. A cosine distance is then computed between two vectors to estimate the distance between the two corresponding clusters.
+To create the vectors, words are extracted from the textual metadata associated with each picture in the cluster. These words are then lemmatized and only nouns, adjectives and non modal verbs are kept to characterize the cluster. Each lemma in the vector is finally associated with a score computed thanks to the bm25 weighting function~\cite{robertson1995okapi} that gives a score close to 1 to lemmas that are the most representative of the cluster's content.
+In our system, lemmas are extracted from title, description or, when available, tags metadata.%, used either separately or in combination with one another.
+
+\subsubsection{geographic distance matrix}\label{geo}
+We also compute the geographic distance between every clusters that contain at least one picture with GPS information. The distance between two clusters $u$ and $v$ corresponds to the minimum geographic distance among all the possible distances between every pictures in cluster $u$ and every pictures in cluster $v$. Moreover, in order to avoid the merging of events that take place in the same location but at different time (such as festivals that take place at the same location every year), we also prevent the merging of two clusters if their associated date is greater than a certain threshold (48h) by artificially increasing their geographical distance.
+%. Clusters with a geographic distance inferior to 1 km and with a date taken timespan inferior to 48h were merged in the same cluster.
+
+\section{Experiments and results}
+For the full clustering subtask, each participant was allowed to submit up to 5 runs. 
+In this section we both describe our runs and discuss the results obtained.
+All the submitted runs are based on the preliminary clustering, that uses an $\alpha$ parameter equals to 20 hours, 24 hours or 30 hours. The hierarchical clustering is then obtained thanks to the textual metadata only (Text), the geographical information only (Geo) or both sources of knowledge (Geo-Text). In this latter case, the combination is done is cascade, meaning that a hierarchical clustering is first performed thanks to the geographical information and then a hierarchical clustering based on text is then applied on the result of the geographical clustering.
+From table~\ref{t:test} it can be seen that the combination gives the best results with F1 score greater than 0.8 and normalized mutual information greater than 0.95. We can also see that combining both sources of information (24h-Geo-Text) improves the metric values compared with information used alone (24h-Text and  24h-Geo). Finally the left part of the table presents the results obtained on our three development datasets. We can notice from these numbers that the proposed approach is robust and gives similar results on both dev and test sets.
+
+%\section{Conclusions and future work}
+%This paper presents the hierarchical clustering based approach proposed by LIMSI for the full clustering subtask of the Social Event Detection task at MediaEval 2014. %Our system that uses textual metadata, user knowledge and geographical information reaches 0.8 in F1 score and more than 0.95 in NMI for our best run.
+
+
+
+\bibliographystyle{plain}
+\bibliography{sigproc-sp}
+\balancecolumns
+% That's all folks!
+\end{document}
